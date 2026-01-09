@@ -1,0 +1,16 @@
+@use "./variables";
+@use "./mixins";
+@use "./reset";
+@use "./fonts";
+
+* {
+  box-sizing: border-box
+}
+
+html {
+  font-family: "Basis Grotesque Pro", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 100vh;
+  background: #F4F4F4;
+}

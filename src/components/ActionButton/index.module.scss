@@ -1,0 +1,14 @@
+@use "@styles/variables" as vars;
+
+.button {
+  height: 36px;
+  border: 1.2px solid vars.$lightGray;
+  background-color: inherit;
+  border-radius: 6px;
+  font-weight: 500;
+
+  &:disabled {
+    background-color: #F4F4F4;
+    color: #D3D8DC;
+  }
+}

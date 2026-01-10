@@ -1,0 +1,18 @@
+@use "@styles/variables" as vars;
+@use "@styles/mixins" as mix;
+
+.pageContainer {
+  @include mix.container;
+}
+
+.titleInner {
+  margin: 20px 0;
+}
+
+.providerInner {
+  margin-top: 20px;
+}
+
+.providerLabel {
+  font-weight: 500;
+}

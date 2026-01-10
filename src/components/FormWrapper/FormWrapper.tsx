@@ -8,13 +8,15 @@ interface IFormWrapperProps {
     children: React.ReactNode,
     isSaveBtnDisabled: boolean,
     handleSave: () => void,
+    handleCancel: () => void,
 }
 
 const FormWrapper: React.FC<IFormWrapperProps> = React.memo((
     {
         children,
         isSaveBtnDisabled,
-        handleSave
+        handleSave,
+        handleCancel
     }) => {
     return (
         <div className={styles.formWrapper}>
@@ -24,7 +26,7 @@ const FormWrapper: React.FC<IFormWrapperProps> = React.memo((
                     {children}
                 </div>
                 <div className={styles.actionsWrapper}>
-                    <ActionButton>Cancel</ActionButton>
+                    <ActionButton onClick={handleCancel}>Cancel</ActionButton>
                     <ActionButton
                         width={64}
                         disabled={isSaveBtnDisabled}

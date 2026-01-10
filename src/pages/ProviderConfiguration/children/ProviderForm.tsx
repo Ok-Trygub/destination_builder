@@ -12,6 +12,8 @@ import {regions} from "@helpers/regions";
 import {SingleValue} from "react-select";
 import {AiOutlineEye} from "react-icons/ai";
 import {AiOutlineEyeInvisible} from "react-icons/ai";
+import {buildDestinationUrl} from "@pages/ProviderConfiguration/helpers/buildDestinationUrl";
+import {Providers} from "@enums/providers";
 
 
 interface IProviderForm {
@@ -22,10 +24,29 @@ interface IProviderForm {
     secretAccessKey: string | undefined
 }
 
+interface IDestination {
+    url: string,
+    key: string,
+    secret: string
+}
 
-const ProviderForm = React.memo(() => {
+export interface IDestinationPayload {
+    destination: IDestination
+}
+
+interface IProviderFormProps {
+    setSubmitError: React.Dispatch<React.SetStateAction<string | null>>,
+    setSavedProviders: React.Dispatch<React.SetStateAction<IDestinationPayload[]>>
+}
+
+const ProviderForm: React.FC<IProviderFormProps> = React.memo((
+    {
+        setSubmitError,
+        setSavedProviders
+    }) => {
     const [isVisibleKey, setIsVisibleKey] = useState(false);
-    const {handleSubmit, control, formState: {errors}, setValue} = useForm<IProviderForm>({
+    const {handleSubmit, control, formState: {errors, isValid}, setValue} = useForm<IProviderForm>({
+        mode: "onChange",
         defaultValues: {
             provider: undefined,
             bucketName: undefined,
@@ -36,6 +57,7 @@ const ProviderForm = React.memo(() => {
     });
     const navigate = useNavigate();
     const location = useLocation();
+
 
     const selectedProvider = useWatch({control, name: "provider"});
 
@@ -51,9 +73,38 @@ const ProviderForm = React.memo(() => {
     }, []);
 
 
-    const handleSubmitForm = (): void => {
+    const handleSubmitForm = (data: IProviderForm) => {
+        setSubmitError(null);
+        const provider = data.provider!.label;
+        const bucket = data.bucketName ?? "";
+        const key = data.accessKeyId ?? "";
+        const secret = data.secretAccessKey ?? "";
 
-    }
+        const url = buildDestinationUrl(provider, data.regionName, bucket);
+
+        const payload: IDestinationPayload = {
+            destination: {url, key, secret}
+        };
+
+        submitDestination(payload);
+    };
+
+
+    const saveProviderDestination = async (payload: IDestinationPayload): Promise<IDestinationPayload> => {
+        await new Promise((r) => setTimeout(r, 5000));
+        return payload;
+    };
+
+    const submitDestination = (payload: IDestinationPayload) => {
+        (async () => {
+            try {
+                const resp = await saveProviderDestination(payload);
+                setSavedProviders((prev) => [...prev, resp]);
+            } catch {
+                setSubmitError("Failed to save provider.");
+            }
+        })();
+    };
 
     const handleCancel = (): void => {
         navigate(AppRoutes.HOME)
@@ -71,6 +122,7 @@ const ProviderForm = React.memo(() => {
                         <Controller
                             control={control}
                             name="provider"
+                            rules={{required: true}}
                             render={({field: {value, onChange}}) => (
                                 <SelectInput
                                     value={value}
@@ -82,13 +134,16 @@ const ProviderForm = React.memo(() => {
                                 />
                             )}
                         />
+                        {errors?.provider?.type === "required" &&
+                            <div className={styles.formError}>Provider is required field</div>}
                         <div className={styles.inputsInner}>
                             <div>
                                 <label className={styles.inputLabel}>Bucket Name</label>
                                 <Controller
                                     control={control}
                                     rules={{
-                                        minLength: 3
+                                        minLength: 3,
+                                        required: true
                                     }}
                                     name="bucketName"
                                     render={({field: {value, onChange}}) => (
@@ -101,8 +156,10 @@ const ProviderForm = React.memo(() => {
                                 />
                                 {errors?.bucketName?.type === "minLength" &&
                                     <div className={styles.formError}>Bucket Name must be at least 3 characters</div>}
+                                {errors?.bucketName?.type === "required" &&
+                                    <div className={styles.formError}>Bucket Name is required field</div>}
                             </div>
-                            {selectedProvider.label.includes("Google Cloud") &&
+                            {selectedProvider.label.includes(Providers.AWS) &&
                                 <div>
                                     <label className={styles.inputLabel}>Region Name</label>
                                     <Controller
@@ -119,6 +176,8 @@ const ProviderForm = React.memo(() => {
                                             />
                                         )}
                                     />
+                                    {errors?.regionName?.type === "required" &&
+                                        <div className={styles.formError}>Region Name is required field</div>}
                                 </div>
                             }
                         </div>
@@ -138,13 +197,15 @@ const ProviderForm = React.memo(() => {
                                         />
                                     )}
                                 />
+                                {errors?.accessKeyId?.type === "required" &&
+                                    <div className={styles.formError}>Access Key ID is required field</div>}
                             </div>
                             <div className={styles.inputInner}>
                                 <label className={styles.inputLabel}>Secret Access Key</label>
                                 <Controller
                                     control={control}
                                     name="secretAccessKey"
-                                    rules={{required: false}}
+                                    rules={{required: true}}
                                     render={({field: {value, onChange}}) => (
                                         <div className={styles.secretKeyBtn}>
                                             <Input
@@ -166,6 +227,8 @@ const ProviderForm = React.memo(() => {
                                         </div>
                                     )}
                                 />
+                                {errors?.secretAccessKey?.type === "required" &&
+                                    <div className={styles.formError}>Secret Access Key is required field</div>}
                             </div>
                         </div>
                     </div>
@@ -175,7 +238,7 @@ const ProviderForm = React.memo(() => {
                     </div>
             }
             <FormActions
-                isSaveBtnDisabled={false}
+                isSaveBtnDisabled={!isValid}
                 handleCancel={handleCancel}
             />
         </form>

@@ -1,11 +1,11 @@
 export interface ISelectInput {
-    id: number,
+    id: string,
     name: string,
     logo?: string
 }
 
 export interface ISelectOption {
-    value: number,
+    value: string,
     label: string,
     logo?: string
 }

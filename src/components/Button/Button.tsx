@@ -7,7 +7,7 @@ interface IActionButton extends ButtonHTMLAttributes<HTMLButtonElement> {
     children: React.ReactNode;
 };
 
-const ActionButton = memo(({width, children, style, ...props}: IActionButton) => {
+const Button = memo(({width, children, style, ...props}: IActionButton) => {
     return (
         <button
             {...props}
@@ -19,5 +19,5 @@ const ActionButton = memo(({width, children, style, ...props}: IActionButton) =>
     );
 });
 
-ActionButton.displayName = "ActionButton";
-export default ActionButton;
+Button.displayName = "Button";
+export default Button;

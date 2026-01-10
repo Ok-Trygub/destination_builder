@@ -10,15 +10,14 @@
 }
 
 .providerInner {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .providerLabel {
-  font-weight: 500;
+  @include mix.inputLabel;
 }
 
 .buttonWrapper {
-  margin-top: 10px;
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -43,10 +42,16 @@
   }
 }
 
-.selectedProvider{
+.selectedProvider {
   background-color: #e8ecf0;
 }
 
+.formContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 280px;
+}
 
 @container form (max-width: 500px) {
   .buttonWrapper {

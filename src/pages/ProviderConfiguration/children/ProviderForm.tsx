@@ -123,7 +123,6 @@ const ProviderForm = React.memo(() => {
                             }
                         </div>
 
-
                         <div className={styles.inputsInner}>
                             <div>
                                 <label className={styles.inputLabel}>Access Key ID</label>

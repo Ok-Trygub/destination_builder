@@ -12,8 +12,12 @@ const Provider: React.FC = React.memo(() => {
     const [selectedProvider, setSelectedProvider] = useState<IProvider | undefined>(undefined);
     const navigate = useNavigate();
 
-    const handleSave = () => {
+    const handleSave = (): void => {
         navigate(AppRoutes.PROVIDER_CONFIGURATION)
+    }
+
+    const handleCancel = (): void => {
+        setSelectedProvider(undefined)
     }
 
     return (
@@ -24,6 +28,7 @@ const Provider: React.FC = React.memo(() => {
             <FormWrapper
                 isSaveBtnDisabled={!selectedProvider}
                 handleSave={handleSave}
+                handleCancel={handleCancel}
             >
                 <div className={styles.providerInner}>
                     <span className={styles.providerLabel}>Choose Provider</span>

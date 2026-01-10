@@ -1,40 +1,20 @@
 import React from 'react';
 import styles from "./index.module.scss";
-import ActionButton from "@components/ActionButton/ActionButton";
-
 
 
 interface IFormWrapperProps {
     children: React.ReactNode,
-    isSaveBtnDisabled: boolean,
-    handleSave: () => void,
-    handleCancel: () => void,
+    isConfigurationPage: boolean
 }
 
-const FormWrapper: React.FC<IFormWrapperProps> = React.memo((
-    {
-        children,
-        isSaveBtnDisabled,
-        handleSave,
-        handleCancel
-    }) => {
+const FormWrapper: React.FC<IFormWrapperProps> = React.memo(({children, isConfigurationPage}) => {
     return (
-        <div className={styles.formWrapper}>
-            <div className={styles.formContent}>
-                <div>
-                    <h4 className={styles.formTitle}>Third-Party Storage</h4>
-                    {children}
-                </div>
-                <div className={styles.actionsWrapper}>
-                    <ActionButton onClick={handleCancel}>Cancel</ActionButton>
-                    <ActionButton
-                        width={64}
-                        disabled={isSaveBtnDisabled}
-                        onClick={handleSave}
-                    >
-                        Save
-                    </ActionButton>
-                </div>
+        <div className={isConfigurationPage
+            ? `${styles.formWrapper} ${styles.configFormWrapper}`
+            : styles.formWrapper}>
+            <div className={styles.formInner}>
+                <h4 className={styles.formTitle}>Third-Party Storage</h4>
+                {children}
             </div>
         </div>
     );

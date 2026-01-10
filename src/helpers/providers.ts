@@ -1,24 +1,17 @@
 import awsIcon from "../assets/img/aws.png";
 import googleIcon from "../assets/img/google.png";
+import {ISelectInput} from "@helpers/formatSelectOptions";
 
 
-export interface IProvider {
-    id: number,
-    name: string,
-    logo: string
-}
-
-export const providers: IProvider[] = [
+export const providers: ISelectInput[] = [
     {
         id: 1,
         name: "AWS",
         logo: awsIcon
-
     },
     {
         id: 2,
         name: "Google Cloud",
         logo: googleIcon
-
     }
 ]

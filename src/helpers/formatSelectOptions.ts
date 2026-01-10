@@ -1,0 +1,21 @@
+export interface ISelectInput {
+    id: number,
+    name: string,
+    logo?: string
+}
+
+export interface ISelectOption {
+    value: number,
+    label: string,
+    logo?: string
+}
+
+export const formatSelectOptions = (selectData: ISelectInput[]): ISelectOption[] => {
+    return selectData.map(opt => {
+        return {
+            value: opt.id,
+            label: opt.name,
+            logo: opt.logo
+        }
+    })
+}

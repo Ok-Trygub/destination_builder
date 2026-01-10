@@ -4,4 +4,15 @@
   padding-bottom: 50px;
 }
 
+@mixin inputLabel {
+  margin-bottom: 10px;
+  font-weight: 500;
+}
 
+@mixin formError {
+  color: red;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 3px;
+  text-align: left;
+}

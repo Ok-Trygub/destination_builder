@@ -6,6 +6,9 @@ import * as path from "path";
 export default defineConfig({
     plugins: [react()],
     base: "/",
+    css: {
+        devSourcemap: true,
+    },
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "src"),

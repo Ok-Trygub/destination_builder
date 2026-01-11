@@ -1,28 +1,27 @@
-# React + TypeScript + Vite
+## Destination Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based **Destination Builder UI** that allows users to configure cloud storage destinations  
+for **AWS S3** and **Google Cloud Storage**, built as a config-driven and extensible solution.
 
-## Expanding the ESLint configuration
+**Live demo:**
+https://ok-trygub.github.io/destination_builder/
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Vite**
+- **React**
+- **TypeScript**
+- **React Router**
+- **SCSS**
+- **react-hook-form**
+- **react-select**
 
-      // Other configs...
-    ],
-  },
-])
-```
+---
+
+###  How to Run Locally
+
+```bash
+npm install
+npm run dev

@@ -2,8 +2,9 @@ import React, {useState} from 'react';
 import styles from './index.module.scss';
 import PageTitle from "@components/PageTitle/PageTitle";
 import FormWrapper from "@components/FormWrapper/FormWrapper";
-import ProviderForm, {IDestinationPayload} from "@pages/ProviderConfiguration/children/ProviderForm/ProviderForm";
 import Destinations from "@pages/ProviderConfiguration/children/Destinations/Destinations";
+import {IDestinationPayload} from "@/services/saveProviderDestination";
+import ProviderForm from "@pages/ProviderConfiguration/children/ProviderForm/ProviderForm";
 
 
 const ProviderConfiguration: React.FC = React.memo(() => {

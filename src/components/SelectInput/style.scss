@@ -1,0 +1,28 @@
+@use "@styles/variables" as vars;
+
+.app-selectInput__control {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.app-selectInput__indicator-separator {
+  display: none;
+}
+
+.app-selectInput__menu {
+  &-list {
+    & .app-selectInput__option {
+      color: vars.$black;
+
+      &:hover {
+        background-color: vars.$buttonBg;
+        cursor: pointer;
+      }
+
+      &--is-selected {
+        background-color: inherit;
+      }
+    }
+  }
+}

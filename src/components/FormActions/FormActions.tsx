@@ -15,6 +15,7 @@ const FormActions: React.FC<IFormActions> = React.memo((
         handleSave,
         handleCancel
     }) => {
+
     return (
         <div className={styles.actionsWrapper}>
             <Button onClick={handleCancel}>Cancel</Button>

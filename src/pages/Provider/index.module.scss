@@ -34,10 +34,10 @@
   padding: 0 15px;
   gap: 10px;
   cursor: pointer;
+  transition: 0.5s;
 
   &:hover,
   &:active {
-    transition: 0.5s;
     background-color: #e8ecf0;
   }
 }

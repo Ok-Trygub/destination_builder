@@ -1,6 +1,6 @@
 import React from 'react';
-import {IDestinationPayload} from "@pages/ProviderConfiguration/children/ProviderForm/ProviderForm";
 import styles from './index.module.scss';
+import {IDestinationPayload} from "@/services/saveProviderDestination";
 
 
 interface IDestinationsProps {

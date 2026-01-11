@@ -4,7 +4,7 @@ import * as path from "path";
 
 export default defineConfig({
     plugins: [react()],
-    base: "/",
+    base: "/destination_builder/",
     css: {
         devSourcemap: true,
     },

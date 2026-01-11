@@ -16,8 +16,6 @@
   }
 
   &::placeholder {
-    font-size: 14px;
-    font-family: "Poppins-Regular", sans-serif;
-    color: #8D8D8D;
+    color: vars.$lightGray;
   }
 }

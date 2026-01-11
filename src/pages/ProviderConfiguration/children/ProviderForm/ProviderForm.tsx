@@ -10,18 +10,17 @@ import {formatSelectOptions, ISelectOption} from "@helpers/formatSelectOptions";
 import Input from "@components/Input/Input";
 import {regions} from "@helpers/regions";
 import {SingleValue} from "react-select";
-import {AiOutlineEye} from "react-icons/ai";
-import {AiOutlineEyeInvisible} from "react-icons/ai";
+import {AiOutlineEye, AiOutlineEyeInvisible} from "react-icons/ai";
 import {buildDestinationUrl} from "@pages/ProviderConfiguration/helpers/buildDestinationUrl";
 import {Providers} from "@enums/providers";
 
 
 interface IProviderForm {
     provider: SingleValue<ISelectOption>,
-    bucketName: string | undefined,
-    regionName: SingleValue<ISelectOption>,
-    accessKeyId: string | undefined,
-    secretAccessKey: string | undefined
+    bucketName: string,
+    regionName: SingleValue<ISelectOption> | null,
+    accessKeyId: string,
+    secretAccessKey: string
 }
 
 interface IDestination {
@@ -34,25 +33,40 @@ export interface IDestinationPayload {
     destination: IDestination
 }
 
+interface IBackendError {
+    field: string;
+    message: string;
+}
+
 interface IProviderFormProps {
     setSubmitError: React.Dispatch<React.SetStateAction<string | null>>,
-    setSavedProviders: React.Dispatch<React.SetStateAction<IDestinationPayload[]>>
+    setSavedDestinations: React.Dispatch<React.SetStateAction<IDestinationPayload[]>>,
+    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const ProviderForm: React.FC<IProviderFormProps> = React.memo((
     {
         setSubmitError,
-        setSavedProviders
+        setSavedDestinations,
+        setIsLoading
     }) => {
     const [isVisibleKey, setIsVisibleKey] = useState(false);
-    const {handleSubmit, control, formState: {errors, isValid}, setValue} = useForm<IProviderForm>({
+    const {
+        handleSubmit,
+        control,
+        formState: {errors, isValid},
+        setValue,
+        setError,
+        clearErrors,
+        reset
+    } = useForm<IProviderForm>({
         mode: "onChange",
         defaultValues: {
             provider: undefined,
-            bucketName: undefined,
-            regionName: undefined,
-            accessKeyId: undefined,
-            secretAccessKey: undefined
+            bucketName: "",
+            regionName: null,
+            accessKeyId: "",
+            secretAccessKey: ""
         }
     });
     const navigate = useNavigate();
@@ -73,37 +87,62 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
     }, []);
 
 
-    const handleSubmitForm = (data: IProviderForm) => {
+    const handleSubmitForm = async (data: IProviderForm): Promise<void> => {
         setSubmitError(null);
-        const provider = data.provider!.label;
-        const bucket = data.bucketName ?? "";
-        const key = data.accessKeyId ?? "";
-        const secret = data.secretAccessKey ?? "";
+        setIsLoading(true);
+        clearErrors("accessKeyId");
 
-        const url = buildDestinationUrl(provider, data.regionName, bucket);
+        const provider = data.provider!.label;
+        const key = data.accessKeyId.trim();
+        const secret = data.secretAccessKey.trim();
+
+        const url = buildDestinationUrl(provider, data.regionName, data.bucketName);
 
         const payload: IDestinationPayload = {
             destination: {url, key, secret}
         };
 
-        submitDestination(payload);
+        try {
+            await submitDestination(payload);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
 
     const saveProviderDestination = async (payload: IDestinationPayload): Promise<IDestinationPayload> => {
-        await new Promise((r) => setTimeout(r, 5000));
+        await new Promise((r) => setTimeout(r, 2000));
+
+        if (/\d/.test(payload.destination.key)) {
+            throw {
+                field: "accessKeyId",
+                message: "Access Key ID must not contain digits.",
+            };
+        }
         return payload;
     };
 
-    const submitDestination = (payload: IDestinationPayload) => {
-        (async () => {
-            try {
-                const resp = await saveProviderDestination(payload);
-                setSavedProviders((prev) => [...prev, resp]);
-            } catch {
-                setSubmitError("Failed to save provider.");
+
+    const submitDestination = async (payload: IDestinationPayload): Promise<void> => {
+        try {
+            const resp = await saveProviderDestination(payload);
+            setSavedDestinations((prev) => [resp, ...prev]);
+
+            reset({
+                provider: selectedProvider,
+                bucketName: undefined,
+                regionName: null,
+                accessKeyId: undefined,
+                secretAccessKey: undefined,
+            });
+        } catch (e) {
+            const err = e as IBackendError;
+            if (err.field === "accessKeyId" && err.message) {
+                setError("accessKeyId", {type: "server", message: err.message});
+                return;
             }
-        })();
+            setSubmitError("Failed to save provider.");
+        }
     };
 
     const handleCancel = (): void => {
@@ -122,42 +161,42 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                         <Controller
                             control={control}
                             name="provider"
-                            rules={{required: true}}
+                            rules={{required: "Provider is required field"}}
                             render={({field: {value, onChange}}) => (
                                 <SelectInput
                                     value={value}
                                     name={"provider"}
-                                    onChange={(options) => {
-                                        onChange(options)
+                                    onChange={(option) => {
+                                        onChange(option)
                                     }}
                                     options={providersOptions}
                                 />
                             )}
                         />
-                        {errors?.provider?.type === "required" &&
-                            <div className={styles.formError}>Provider is required field</div>}
+                        {errors.provider?.message && (
+                            <div className={styles.formError}>{errors.provider.message}</div>
+                        )}
                         <div className={styles.inputsInner}>
                             <div>
                                 <label className={styles.inputLabel}>Bucket Name</label>
                                 <Controller
                                     control={control}
                                     rules={{
-                                        minLength: 3,
-                                        required: true
+                                        required: "Provider is required field",
+                                        minLength: {value: 3, message: "Bucket Name must be at least 3 characters"}
                                     }}
                                     name="bucketName"
                                     render={({field: {value, onChange}}) => (
                                         <Input
-                                            onChange={(e) => onChange(e)}
+                                            onChange={(e) => onChange(e.target.value)}
                                             value={value}
                                             name="bucketName"
                                         />
                                     )}
                                 />
-                                {errors?.bucketName?.type === "minLength" &&
-                                    <div className={styles.formError}>Bucket Name must be at least 3 characters</div>}
-                                {errors?.bucketName?.type === "required" &&
-                                    <div className={styles.formError}>Bucket Name is required field</div>}
+                                {errors.bucketName?.message && (
+                                    <div className={styles.formError}>{errors.bucketName.message}</div>
+                                )}
                             </div>
                             {selectedProvider.label.includes(Providers.AWS) &&
                                 <div>
@@ -165,19 +204,21 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                                     <Controller
                                         control={control}
                                         name="regionName"
+                                        rules={{required: "Region Name is required field"}}
                                         render={({field: {value, onChange}}) => (
                                             <SelectInput
                                                 value={value}
                                                 name={"regionName"}
-                                                onChange={(options) => {
-                                                    onChange(options)
+                                                onChange={(option) => {
+                                                    onChange(option)
                                                 }}
                                                 options={regionsOptions}
                                             />
                                         )}
                                     />
-                                    {errors?.regionName?.type === "required" &&
-                                        <div className={styles.formError}>Region Name is required field</div>}
+                                    {errors.regionName?.message && (
+                                        <div className={styles.formError}>{errors.regionName.message}</div>
+                                    )}
                                 </div>
                             }
                         </div>
@@ -188,28 +229,29 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                                 <Controller
                                     control={control}
                                     name="accessKeyId"
-                                    rules={{required: true}}
+                                    rules={{required: "Access Key ID is required field"}}
                                     render={({field: {value, onChange}}) => (
                                         <Input
-                                            onChange={(e) => onChange(e)}
+                                            onChange={(e) => onChange(e.target.value)}
                                             value={value}
                                             name="accessKeyId"
                                         />
                                     )}
                                 />
-                                {errors?.accessKeyId?.type === "required" &&
-                                    <div className={styles.formError}>Access Key ID is required field</div>}
+                                {errors.accessKeyId?.message && (
+                                    <div className={styles.formError}>{errors.accessKeyId.message}</div>
+                                )}
                             </div>
                             <div className={styles.inputInner}>
                                 <label className={styles.inputLabel}>Secret Access Key</label>
                                 <Controller
                                     control={control}
                                     name="secretAccessKey"
-                                    rules={{required: true}}
+                                    rules={{required: "Secret Access Key is required field"}}
                                     render={({field: {value, onChange}}) => (
                                         <div className={styles.secretKeyBtn}>
                                             <Input
-                                                onChange={(e) => onChange(e)}
+                                                onChange={(e) => onChange(e.target.value)}
                                                 value={value}
                                                 name="secretAccessKey"
                                                 type={isVisibleKey ? "text" : "password"}
@@ -227,8 +269,9 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                                         </div>
                                     )}
                                 />
-                                {errors?.secretAccessKey?.type === "required" &&
-                                    <div className={styles.formError}>Secret Access Key is required field</div>}
+                                {errors.secretAccessKey?.message && (
+                                    <div className={styles.formError}>{errors.secretAccessKey.message}</div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -238,7 +281,7 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                     </div>
             }
             <FormActions
-                isSaveBtnDisabled={!isValid}
+                isSaveBtnDisabled={!selectedProvider || !isValid}
                 handleCancel={handleCancel}
             />
         </form>

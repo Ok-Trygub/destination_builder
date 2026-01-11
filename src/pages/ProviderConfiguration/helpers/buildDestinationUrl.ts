@@ -7,13 +7,15 @@ const FIXED_PATH = "folder";
 
 export const buildDestinationUrl = (
     provider: string,
-    region: SingleValue<ISelectOption>,
+    region: SingleValue<ISelectOption> | null,
     bucket: string,
-) => {
+): string | undefined => {
 
     if (provider === Providers.AWS && region) {
         return `${ServerProtocols.AWS}s3.${region.value}.amazonaws.com/${bucket.trim()}/${FIXED_PATH}`;
-    } else {
+    } else if (provider === Providers.GOOGLE_CLOUD) {
         return `${ServerProtocols.GOOGLE_CLOUD}storage.googleapis.com/${bucket.trim()}/${FIXED_PATH}`;
+    } else {
+        return
     }
 };

@@ -13,29 +13,15 @@ import {SingleValue} from "react-select";
 import {AiOutlineEye, AiOutlineEyeInvisible} from "react-icons/ai";
 import {buildDestinationUrl} from "@pages/ProviderConfiguration/helpers/buildDestinationUrl";
 import {Providers} from "@enums/providers";
+import {IBackendError, IDestinationPayload, saveProviderDestination} from "@/services/saveProviderDestination";
 
 
 interface IProviderForm {
-    provider: SingleValue<ISelectOption>,
+    provider: SingleValue<ISelectOption> | null,
     bucketName: string,
     regionName: SingleValue<ISelectOption> | null,
     accessKeyId: string,
     secretAccessKey: string
-}
-
-interface IDestination {
-    url: string,
-    key: string,
-    secret: string
-}
-
-export interface IDestinationPayload {
-    destination: IDestination
-}
-
-interface IBackendError {
-    field: string;
-    message: string;
 }
 
 interface IProviderFormProps {
@@ -62,7 +48,7 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
     } = useForm<IProviderForm>({
         mode: "onChange",
         defaultValues: {
-            provider: undefined,
+            provider: null,
             bucketName: "",
             regionName: null,
             accessKeyId: "",
@@ -86,42 +72,30 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
         }
     }, []);
 
-
     const handleSubmitForm = async (data: IProviderForm): Promise<void> => {
+        if (!data.provider) return;
         setSubmitError(null);
         setIsLoading(true);
         clearErrors("accessKeyId");
 
-        const provider = data.provider!.label;
+        const provider = data.provider.label;
         const key = data.accessKeyId.trim();
         const secret = data.secretAccessKey.trim();
 
-        const url = buildDestinationUrl(provider, data.regionName, data.bucketName);
-
-        const payload: IDestinationPayload = {
-            destination: {url, key, secret}
-        };
-
         try {
+            const url = buildDestinationUrl(provider, data.regionName, data.bucketName);
+            if (!url) {
+                return;
+            }
+            const payload: IDestinationPayload = {
+                destination: {url, key, secret}
+            };
+
             await submitDestination(payload);
         } finally {
             setIsLoading(false);
         }
     };
-
-
-    const saveProviderDestination = async (payload: IDestinationPayload): Promise<IDestinationPayload> => {
-        await new Promise((r) => setTimeout(r, 2000));
-
-        if (/\d/.test(payload.destination.key)) {
-            throw {
-                field: "accessKeyId",
-                message: "Access Key ID must not contain digits.",
-            };
-        }
-        return payload;
-    };
-
 
     const submitDestination = async (payload: IDestinationPayload): Promise<void> => {
         try {
@@ -130,10 +104,10 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
 
             reset({
                 provider: selectedProvider,
-                bucketName: undefined,
+                bucketName: "",
                 regionName: null,
-                accessKeyId: undefined,
-                secretAccessKey: undefined,
+                accessKeyId: "",
+                secretAccessKey: "",
             });
         } catch (e) {
             const err = e as IBackendError;
@@ -149,8 +123,8 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
         navigate(AppRoutes.HOME)
     }
 
-    const providersOptions = useMemo(() => (formatSelectOptions(providers)), [providers]);
-    const regionsOptions = useMemo(() => (formatSelectOptions(regions)), [regions]);
+    const providersOptions = useMemo(() => (formatSelectOptions(providers)), []);
+    const regionsOptions = useMemo(() => (formatSelectOptions(regions)), []);
 
     return (
         <form onSubmit={handleSubmit(handleSubmitForm)} className={styles.form}>
@@ -182,7 +156,7 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                                 <Controller
                                     control={control}
                                     rules={{
-                                        required: "Provider is required field",
+                                        required: "Bucket Name is required field",
                                         minLength: {value: 3, message: "Bucket Name must be at least 3 characters"}
                                     }}
                                     name="bucketName"
@@ -198,7 +172,7 @@ const ProviderForm: React.FC<IProviderFormProps> = React.memo((
                                     <div className={styles.formError}>{errors.bucketName.message}</div>
                                 )}
                             </div>
-                            {selectedProvider.label.includes(Providers.AWS) &&
+                            {selectedProvider?.label === Providers.AWS &&
                                 <div>
                                     <label className={styles.inputLabel}>Region Name</label>
                                     <Controller
